@@ -1,0 +1,61 @@
+<div class="row justify-content-center py-4">
+  <div class="col-md-6 col-lg-5">
+    <div class="card-custom p-4 p-md-5">
+      <div class="text-center mb-4">
+        <div class="metric-icon metric-icon-blue mx-auto mb-3">
+          <i class="fa-solid fa-user-plus"></i>
+        </div>
+        <h3 class="fw-bold">Create VoiceKhata Account</h3>
+        <p class="text-muted small">Start managing your ledger with English voice</p>
+      </div>
+
+      <div ng-if="errorMessage" class="alert alert-danger py-2 small" role="alert">
+        {{ errorMessage }}
+      </div>
+
+      <form ng-submit="doRegister()">
+        <div class="row g-3 mb-3">
+          <div class="col-md-6">
+            <label class="form-label fw-semibold small text-muted">Username *</label>
+            <input type="text" class="form-control" ng-model="registerData.username" placeholder="johndoe" required>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-semibold small text-muted">Email</label>
+            <input type="email" class="form-control" ng-model="registerData.email" placeholder="john@example.com">
+          </div>
+        </div>
+
+        <div class="row g-3 mb-3">
+          <div class="col-md-6">
+            <label class="form-label fw-semibold small text-muted">Business Store Name</label>
+            <input type="text" class="form-control" ng-model="registerData.business_name" placeholder="John Enterprise">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-semibold small text-muted">Phone Number</label>
+            <input type="text" class="form-control" ng-model="registerData.phone" placeholder="+91 9876543210">
+          </div>
+        </div>
+
+        <div class="row g-3 mb-4">
+          <div class="col-md-6">
+            <label class="form-label fw-semibold small text-muted">Password *</label>
+            <input type="password" class="form-control" ng-model="registerData.password" placeholder="At least 6 characters" required>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-semibold small text-muted">Confirm Password *</label>
+            <input type="password" class="form-control" ng-model="registerData.confirm_password" placeholder="Repeat password" required>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-gradient-blue w-100 py-2 mb-3" ng-disabled="isLoading">
+          <span ng-if="isLoading" class="spinner-border spinner-border-sm me-2"></span>
+          Create Account
+        </button>
+
+        <div class="text-center text-muted small">
+          Already registered? <a href="#!/login" class="text-primary fw-semibold">Login here</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

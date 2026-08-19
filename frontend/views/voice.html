@@ -1,0 +1,246 @@
+<div class="row justify-content-center py-2">
+  <div class="col-lg-9 col-xl-8">
+    <div class="card-custom p-4 p-md-5">
+      <div class="text-center mb-4">
+        <h2 class="fw-bold mb-1">Voice Recording</h2>
+        <p class="text-muted">Speak natural English phrases. For a single sale: <em>"Sugar 20kg for 100 rupees"</em>. For multiple items say <em>"Items list — Sugar 20kg 100, Wheat 5kg 80, Rice 2kg 40"</em></p>
+      </div>
+
+      <!-- Microphone Interface -->
+      <div class="mic-container">
+        <div class="mic-btn-wrapper">
+          <button type="button" class="mic-btn" ng-class="{'recording': isRecording}" ng-click="toggleRecording()" title="Click to start/stop recording">
+            <i class="fa-solid" ng-class="isRecording ? 'fa-square' : 'fa-microphone'"></i>
+          </button>
+          <div class="mic-pulse-ring"></div>
+        </div>
+
+        <div class="fw-semibold text-center mb-3" ng-class="isRecording ? 'text-danger fw-bold' : 'text-muted'">
+          <span ng-if="isRecording"><i class="fa-solid fa-circle text-danger me-1 animate-pulse"></i> Recording English Speech... Click to Stop</span>
+          <span ng-if="!isRecording"><i class="fa-solid fa-microphone-slash me-1"></i> Tap microphone to begin recording</span>
+        </div>
+
+        <!-- Live Transcript Box -->
+        <textarea class="form-control mb-3" rows="3" ng-model="transcript" ng-disabled="isRecording" placeholder="Your transcribed text will appear here... (Or type manually)"></textarea>
+
+        <!-- Action Buttons -->
+        <div class="d-flex flex-wrap justify-content-between gap-3 w-100">
+          <button type="button" class="btn btn-outline-danger" ng-click="clearText()" ng-disabled="!transcript">
+            <i class="fa-solid fa-trash me-2"></i> Clear
+          </button>
+          <button type="button" class="btn btn-gradient-blue px-4 py-2" ng-click="processSpeech()" ng-disabled="!transcript || isParsing">
+            <span ng-if="isParsing" class="spinner-border spinner-border-sm me-2"></span>
+            <i class="fa-solid fa-wand-magic-sparkles me-2" ng-if="!isParsing"></i> AI Parse &amp; Save
+          </button>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════════════════════════════════
+           SALES MODE CONFIRMATION (items table)
+           ══════════════════════════════════════════════════════════════ -->
+      <div ng-if="showConfirmation && isSalesMode" class="border-top pt-4 mt-4">
+
+        <!-- Header -->
+        <div class="d-flex align-items-center justify-content-between mb-3">
+          <h4 class="fw-bold mb-0 text-success">
+            <i class="fa-solid fa-cart-shopping me-2"></i> Sales Confirmation
+          </h4>
+          <span class="badge bg-success-subtle text-success fs-6">
+            <i class="fa-solid fa-box-open me-1"></i> Items Mode
+          </span>
+        </div>
+        <p class="text-muted small mb-3">AI extracted the items below. Edit quantities, units, or prices before saving.</p>
+
+        <!-- Missing Price Alert -->
+        <div ng-if="hasMissingPrices()" class="alert alert-warning border-warning d-flex align-items-center gap-2 mb-3">
+          <i class="fa-solid fa-triangle-exclamation text-warning fs-5"></i>
+          <div>
+            <strong>Price Required:</strong> Some products are not in your inventory and no price was specified in the voice recording. Please enter the price(s) for the highlighted items to continue.
+          </div>
+        </div>
+
+        <!-- Items Table -->
+        <div class="table-responsive mb-3">
+          <table class="table table-bordered align-middle mb-0" style="min-width:640px">
+            <thead class="table-light">
+              <tr>
+                <th style="width:25%">Item Name</th>
+                <th style="width:12%">Qty</th>
+                <th style="width:12%">Unit</th>
+                <th style="width:18%">Price (₹)</th>
+                <th style="width:15%">Total (₹)</th>
+                <th style="width:13%">Price Source</th>
+                <th style="width:5%" class="text-center">Del</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr ng-repeat="item in salesItems track by $index" ng-class="{'table-warning': item.price_source === 'missing' && (!item.price || item.price <= 0)}">
+                <td>
+                  <input type="text" class="form-control form-control-sm"
+                         ng-model="item.name" placeholder="Item name" required>
+                </td>
+                <td>
+                  <input type="number" min="0.001" step="0.001" class="form-control form-control-sm"
+                         ng-model="item.qty" ng-change="updateItemTotal(item)" placeholder="1">
+                </td>
+                <td>
+                  <select class="form-select form-select-sm" ng-model="item.unit">
+                    <option value="kg">kg</option>
+                    <option value="g">g</option>
+                    <option value="ltr">ltr</option>
+                    <option value="ml">ml</option>
+                    <option value="pcs">pcs</option>
+                    <option value="dozen">dozen</option>
+                    <option value="box">box</option>
+                    <option value="packet">packet</option>
+                    <option value="bag">bag</option>
+                    <option value="mtr">mtr</option>
+                    <option value="ft">ft</option>
+                  </select>
+                </td>
+                <td>
+                  <input type="number" min="0" step="0.01" class="form-control form-control-sm"
+                         ng-model="item.price" ng-change="updateItemTotal(item)" placeholder="0.00"
+                         ng-class="{'is-invalid': item.price_source === 'missing' && (!item.price || item.price <= 0)}">
+                </td>
+                <td class="fw-bold text-success text-end">
+                  ₹{{ (item.qty * item.price) | number:2 }}
+                </td>
+                <td>
+                  <span ng-if="item.price_source === 'voice'" class="badge bg-success-subtle text-success d-inline-block">
+                    <i class="fa-solid fa-microphone me-1"></i> Voice Input
+                  </span>
+                  <span ng-if="item.price_source === 'inventory'" class="badge bg-primary-subtle text-primary d-inline-block" title="From Inventory (Unit: {{item.inventory_unit}} at ₹{{item.inventory_price}})">
+                    <i class="fa-solid fa-boxes-stacked me-1"></i> Inventory
+                  </span>
+                  <span ng-if="item.price_source === 'missing' && (!item.price || item.price <= 0)" class="badge bg-danger-subtle text-danger d-inline-block animate-pulse">
+                    <i class="fa-solid fa-triangle-exclamation me-1"></i> Price Missing
+                  </span>
+                  <span ng-if="item.price_source === 'manual' || (item.price_source === 'missing' && item.price > 0)" class="badge bg-warning-subtle text-warning d-inline-block">
+                    <i class="fa-solid fa-keyboard me-1"></i> Manual
+                  </span>
+                </td>
+                <td class="text-center">
+                  <button type="button" class="btn btn-sm btn-outline-danger p-1 px-2"
+                          ng-click="removeSalesItem($index)" title="Remove item">
+                    <i class="fa-solid fa-xmark"></i>
+                  </button>
+                </td>
+              </tr>
+              <!-- Empty state -->
+              <tr ng-if="salesItems.length === 0">
+                <td colspan="7" class="text-center text-muted py-3">
+                  <i class="fa-solid fa-box-open me-1"></i> No items — click Add Item below
+                </td>
+              </tr>
+            </tbody>
+            <!-- Total Row -->
+            <tfoot class="table-light">
+              <tr>
+                <td colspan="4" class="text-end fw-bold">Grand Total</td>
+                <td class="fw-bold text-success fs-5 text-end">₹{{ calculateSalesTotal() | number:2 }}</td>
+                <td></td>
+                <td></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+
+        <!-- Add Item Button -->
+        <div class="mb-3">
+          <button type="button" class="btn btn-outline-success btn-sm px-3"
+                  ng-click="addSalesItem()">
+            <i class="fa-solid fa-plus me-1"></i> Add Item
+          </button>
+        </div>
+
+        <!-- Optional fields row -->
+        <div class="row g-3 mb-3">
+          <div class="col-md-6">
+            <label class="form-label fw-semibold small">Customer Name <span class="text-muted fw-normal">(optional)</span></label>
+            <input type="text" class="form-control" ng-model="parsedData.customer_name"
+                   placeholder="Leave blank for anonymous sale">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-semibold small">Sale Date</label>
+            <input type="date" class="form-control" ng-model="parsedData.date">
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-semibold small">Notes</label>
+          <textarea class="form-control" rows="2" ng-model="parsedData.description"
+                    placeholder="Optional notes about this sale"></textarea>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="d-flex justify-content-between align-items-center gap-2 mt-3">
+          <button type="button" class="btn btn-light border" ng-click="showConfirmation = false; isSalesMode = false; salesItems = []">
+            Cancel
+          </button>
+          <button type="button" class="btn btn-success px-4 shadow-sm" ng-click="saveTransaction()" ng-disabled="isSaving || salesItems.length === 0">
+            <span ng-if="isSaving" class="spinner-border spinner-border-sm me-2"></span>
+            <i class="fa-solid fa-floppy-disk me-2" ng-if="!isSaving"></i>
+            Save Sales Transaction (₹{{ calculateSalesTotal() | number:2 }})
+          </button>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════════════════════════════════
+           STANDARD MODE CONFIRMATION (customer + amount)
+           ══════════════════════════════════════════════════════════════ -->
+      <div ng-if="showConfirmation && !isSalesMode" class="border-top pt-4 mt-4">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+          <h4 class="fw-bold mb-0 text-primary">
+            <i class="fa-solid fa-file-circle-check me-2"></i> Confirmation Screen
+          </h4>
+          <span class="badge bg-primary-subtle text-primary">Review &amp; Edit</span>
+        </div>
+        <p class="text-muted small">AI extracted the following details. You may edit any field before confirming.</p>
+
+        <form ng-submit="saveTransaction()">
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <label class="form-label fw-semibold small">Customer Name *</label>
+              <input type="text" class="form-control" ng-model="parsedData.customer_name" required placeholder="e.g. John, David, Alex">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold small">Amount (₹) *</label>
+              <input type="number" step="0.01" class="form-control" ng-model="parsedData.amount" required placeholder="0.00">
+            </div>
+          </div>
+
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <label class="form-label fw-semibold small">Transaction Type *</label>
+              <select class="form-select" ng-model="parsedData.transaction_type" required>
+                <option value="credit">Credit (Gave / Loaned)</option>
+                <option value="payment">Payment (Received / Got)</option>
+                <option value="sales">Sales</option>
+                <option value="expense">Expense</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold small">Due Date (Optional)</label>
+              <input type="date" class="form-control" ng-model="parsedData.due_date">
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold small">Description / Notes</label>
+            <textarea class="form-control" rows="2" ng-model="parsedData.description" placeholder="Voice transcript or extra notes"></textarea>
+          </div>
+
+          <div class="d-flex justify-content-end gap-2">
+            <button type="button" class="btn btn-light border" ng-click="showConfirmation = false">Cancel</button>
+            <button type="submit" class="btn btn-gradient-blue px-4" ng-disabled="isSaving">
+              <span ng-if="isSaving" class="spinner-border spinner-border-sm me-2"></span>
+              Confirm &amp; Save Transaction
+            </button>
+          </div>
+        </form>
+      </div>
+
+    </div>
+  </div>
+</div>

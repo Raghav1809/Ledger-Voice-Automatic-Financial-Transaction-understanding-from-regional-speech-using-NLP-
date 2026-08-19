@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="voiceKhataApp">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VoiceKhata - Smart Voice Accounting & Ledger for Businesses</title>
+
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+    rel="stylesheet">
+
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- FontAwesome Icons (self-hosted – no CDN tracking warnings) -->
+  <link rel="stylesheet" href="css/fontawesome.min.css">
+
+  <!-- Custom Style -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body ng-controller="MainController">
+  {% verbatim %}
+  <!-- Navigation Bar -->
+  <nav class="navbar navbar-expand-lg navbar-custom">
+    <div class="container-fluid">
+      <a class="navbar-brand navbar-brand-custom" href="#!/">
+        <i class="fa-solid fa-microphone-lines text-primary"></i> VoiceKhata
+      </a>
+
+      <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navMenu">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0" ng-if="isAuthenticated()">
+          <li class="nav-item">
+            <a class="nav-link nav-link-custom" ng-class="{'active': isActive('/dashboard')}" href="#!/dashboard">
+              <i class="fa-solid fa-chart-pie me-1"></i> Dashboard
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link nav-link-custom" ng-class="{'active': isActive('/voice')}" href="#!/voice">
+              <i class="fa-solid fa-microphone text-primary me-1"></i> Voice Record
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link nav-link-custom" ng-class="{'active': isActive('/customers')}" href="#!/customers">
+              <i class="fa-solid fa-users me-1"></i> Customers
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link nav-link-custom" ng-class="{'active': isActive('/inventory')}" href="#!/inventory">
+              <i class="fa-solid fa-boxes-stacked me-1"></i> Inventory
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link nav-link-custom" ng-class="{'active': isActive('/transactions')}" href="#!/transactions">
+              <i class="fa-solid fa-receipt me-1"></i> Transactions
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link nav-link-custom" ng-class="{'active': isActive('/insights')}" href="#!/insights">
+              <i class="fa-solid fa-chart-line me-1"></i> Insights
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link nav-link-custom" ng-class="{'active': isActive('/reminders')}" href="#!/reminders">
+              <i class="fa-solid fa-bell me-1"></i> Reminders
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link nav-link-custom" ng-class="{'active': isActive('/settings')}" href="#!/settings">
+              <i class="fa-solid fa-gear me-1"></i> Settings
+            </a>
+          </li>
+        </ul>
+
+        <div class="d-flex align-items-center gap-3 ms-auto">
+          <div ng-if="!isAuthenticated()" class="d-flex gap-2">
+            <a href="#!/login" class="btn btn-outline-blue btn-sm px-3">Login</a>
+            <a href="#!/register" class="btn btn-gradient-blue btn-sm px-3">Register</a>
+          </div>
+
+          <div ng-if="isAuthenticated()" class="dropdown">
+            <button class="btn btn-light rounded-pill border d-flex align-items-center gap-2 px-3 py-1 shadow-sm"
+              type="button" data-bs-toggle="dropdown">
+              <i class="fa-solid fa-user-circle text-primary fs-5"></i>
+              <span class="fw-semibold text-dark">{{ currentUser.username || 'User' }}</span>
+              <i class="fa-solid fa-chevron-down text-muted small"></i>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2">
+              <li><a class="dropdown-item py-2" href="#!/settings"><i class="fa-solid fa-user-gear me-2 text-muted"></i>
+                  Account Settings</a></li>
+              <li>
+                <hr class="dropdown-divider">
+              </li>
+              <li><a class="dropdown-item py-2 text-danger" href="javascript:void(0)" ng-click="logout()"><i
+                    class="fa-solid fa-right-from-bracket me-2"></i> Logout</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main View Container -->
+  <main class="flex-grow-1">
+    <div ng-view class="container-fluid py-4 px-md-5"></div>
+  </main>
+
+  <!-- Global Toast Notifications -->
+  <div class="toast-container-custom">
+    <div ng-repeat="toast in toasts" class="toast-custom" ng-class="'border-' + toast.type">
+      <div class="d-flex align-items-center gap-2">
+        <i ng-if="toast.type === 'success'" class="fa-solid fa-circle-check text-success fs-5"></i>
+        <i ng-if="toast.type === 'danger'" class="fa-solid fa-circle-exclamation text-danger fs-5"></i>
+        <i ng-if="toast.type === 'warning'" class="fa-solid fa-triangle-exclamation text-warning fs-5"></i>
+        <i ng-if="toast.type === 'info'" class="fa-solid fa-circle-info text-info fs-5"></i>
+        <span class="fw-medium text-dark">{{ toast.message }}</span>
+      </div>
+      <button type="button" class="btn-close ms-3" ng-click="removeToast($index)"></button>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="bg-white border-top py-3 text-center text-muted small mt-auto">
+    <div class="container">
+      <span>&copy; 2026 VoiceKhata. English Voice-Driven Accounting & Ledger System. All rights reserved.</span>
+    </div>
+  </footer>
+  {% endverbatim %}
+
+  <!-- Scripts -->
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular-route.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- App Core -->
+  <script src="js/app.js?v=2"></script>
+
+  <!-- Services -->
+  <script src="js/services/toastService.js"></script>
+  <script src="js/services/apiService.js"></script>
+  <script src="js/services/authService.js"></script>
+  <script src="js/services/voiceService.js"></script>
+  <script src="js/services/customerService.js"></script>
+  <script src="js/services/transactionService.js"></script>
+  <script src="js/services/reminderService.js"></script>
+  <script src="js/services/insightService.js?v=2"></script>
+  <script src="js/services/settingsService.js"></script>
+  <script src="js/services/inventoryService.js?v=2"></script>
+
+  <!-- Controllers -->
+  <script src="js/controllers/LandingController.js"></script>
+  <script src="js/controllers/AuthController.js"></script>
+  <script src="js/controllers/DashboardController.js"></script>
+  <script src="js/controllers/VoiceInputController.js"></script>
+  <script src="js/controllers/CustomerController.js"></script>
+  <script src="js/controllers/InventoryController.js?v=5"></script>
+  <script src="js/controllers/TransactionController.js"></script>
+  <script src="js/controllers/InsightController.js?v=2"></script>
+  <script src="js/controllers/ReminderController.js"></script>
+  <script src="js/controllers/SettingsController.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,71 @@
+<div class="hero-section text-center">
+  <div class="container">
+    <div class="badge bg-primary-subtle text-primary fw-bold px-3 py-2 rounded-pill mb-3">
+      <i class="fa-solid fa-bolt me-1"></i> AI-Powered English Voice Accounting
+    </div>
+    <h1 class="hero-title text-dark">
+      Manage Ledger & Credit via <span class="text-primary">English Voice</span>
+    </h1>
+    <p class="hero-subtitle">
+      Speak naturally in English to record customer credit, payments, sales, and dues. Automated AI parsing extracts amounts, names, and due dates instantly.
+    </p>
+    <div class="d-flex justify-content-center gap-3 mb-5">
+      <a href="#!/register" class="btn btn-gradient-blue btn-lg px-4 py-2" ng-if="!isAuthenticated">Get Started Free</a>
+      <a href="#!/dashboard" class="btn btn-gradient-blue btn-lg px-4 py-2" ng-if="isAuthenticated">Go to Dashboard</a>
+      <a href="#!/login" class="btn btn-outline-blue btn-lg px-4 py-2" ng-if="!isAuthenticated">Login Account</a>
+    </div>
+
+    <!-- Sample Voice Cards -->
+    <div class="row g-4 mt-2 justify-content-center">
+      <div class="col-12"><h5 class="fw-bold text-muted uppercase tracking-wide">Try Speaking Natural Phrases Like:</h5></div>
+      <div class="col-md-3" ng-repeat="sample in samplePhrases">
+        <div class="card-custom p-3 text-start h-100 border-top border-primary border-3">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="badge badge-sales">{{ sample.type }}</span>
+            <span class="fw-bold text-primary">{{ sample.amount }}</span>
+          </div>
+          <p class="mb-1 text-dark fw-medium">"{{ sample.text }}"</p>
+          <small class="text-muted"><i class="fa-solid fa-user me-1"></i> {{ sample.name }}</small>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Features Section -->
+<div class="container py-5">
+  <div class="text-center mb-5">
+    <h2 class="fw-bold text-dark">Why Choose VoiceKhata?</h2>
+    <p class="text-muted">Built for modern store owners, freelancers, and businesses who value speed and clarity.</p>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-md-4">
+      <div class="card-custom p-4 h-100">
+        <div class="metric-icon metric-icon-blue mb-3">
+          <i class="fa-solid fa-microphone-lines"></i>
+        </div>
+        <h4 class="fw-bold mb-2">Speech Recognition</h4>
+        <p class="text-muted mb-0">Speak in natural English. Hands-free transaction logging with real-time speech to text conversion.</p>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card-custom p-4 h-100">
+        <div class="metric-icon metric-icon-purple mb-3">
+          <i class="fa-solid fa-brain"></i>
+        </div>
+        <h4 class="fw-bold mb-2">Dual AI & Rule Parser</h4>
+        <p class="text-muted mb-0">Gemini AI parsing with fallback regex engine automatically extracts customer names, amounts, dues, and transaction types.</p>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card-custom p-4 h-100">
+        <div class="metric-icon metric-icon-green mb-3">
+          <i class="fa-solid fa-chart-line"></i>
+        </div>
+        <h4 class="fw-bold mb-2">Financial Insights</h4>
+        <p class="text-muted mb-0">Track total credit, recovered payments, and pending dues with interactive graphs and reminder alerts.</p>
+      </div>
+    </div>
+  </div>
+</div>

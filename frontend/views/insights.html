@@ -1,0 +1,272 @@
+<div>
+  <!-- Header & Time Filter Bar -->
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+    <div>
+      <h2 class="fw-bold mb-1"><i class="fa-solid fa-chart-line text-primary me-2"></i> Financial Insights & Analytics</h2>
+      <p class="text-muted small mb-0">Independent read-only financial performance, cash flow, credit recovery, and product analytics</p>
+    </div>
+
+    <!-- Time Filter Controls -->
+    <div class="d-flex flex-wrap align-items-center gap-2">
+      <div class="btn-group btn-group-sm shadow-sm" role="group">
+        <button type="button" class="btn btn-outline-blue" ng-class="{'active': timeFilter === 'today'}" ng-click="setTimeFilter('today')">Today</button>
+        <button type="button" class="btn btn-outline-blue" ng-class="{'active': timeFilter === 'week'}" ng-click="setTimeFilter('week')">This Week</button>
+        <button type="button" class="btn btn-outline-blue" ng-class="{'active': timeFilter === 'month'}" ng-click="setTimeFilter('month')">This Month</button>
+        <button type="button" class="btn btn-outline-blue" ng-class="{'active': timeFilter === 'year'}" ng-click="setTimeFilter('year')">This Year</button>
+        <button type="button" class="btn btn-outline-blue" ng-class="{'active': timeFilter === 'all'}" ng-click="setTimeFilter('all')">All Time</button>
+      </div>
+
+      <!-- Custom Date Inputs -->
+      <div class="d-flex align-items-center gap-1 bg-white border rounded p-1 shadow-sm ms-md-2">
+        <input type="date" class="form-control form-control-sm border-0" ng-model="customStartDate" style="max-width:130px">
+        <span class="text-muted small">to</span>
+        <input type="date" class="form-control form-control-sm border-0" ng-model="customEndDate" style="max-width:130px">
+        <button class="btn btn-sm btn-gradient-blue px-2" ng-click="applyCustomFilter()" title="Apply Custom Range">
+          <i class="fa-solid fa-filter"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div ng-if="isLoading" class="text-center py-5">
+    <div class="spinner-border text-primary" role="status"></div>
+    <p class="text-muted mt-2 small">Analyzing financial transactions & ledger data...</p>
+  </div>
+
+  <div ng-if="!isLoading">
+    <!-- Key Summary KPIs -->
+    <div class="row g-3 mb-4">
+      <div class="col-6 col-md-4 col-xl-2">
+        <div class="card-custom p-3 border-start border-success border-4 h-100">
+          <span class="text-muted small fw-semibold text-uppercase">Total Sales</span>
+          <h4 class="fw-bold text-success mb-0 mt-1">₹{{ analytics.summary.total_sales | number:2 }}</h4>
+          <small class="text-muted">{{ analytics.summary.sales_count }} sales order(s)</small>
+        </div>
+      </div>
+
+      <div class="col-6 col-md-4 col-xl-2">
+        <div class="card-custom p-3 border-start border-danger border-4 h-100">
+          <span class="text-muted small fw-semibold text-uppercase">Total Expenses</span>
+          <h4 class="fw-bold text-danger mb-0 mt-1">₹{{ analytics.summary.total_expense | number:2 }}</h4>
+          <small class="text-muted">Logged expenses</small>
+        </div>
+      </div>
+
+      <div class="col-6 col-md-4 col-xl-2">
+        <div class="card-custom p-3 border-start border-indigo border-4 h-100">
+          <span class="text-muted small fw-semibold text-uppercase">Net Cash Flow</span>
+          <h4 class="fw-bold mb-0 mt-1" ng-class="{'text-success': analytics.summary.net_cash_flow >= 0, 'text-danger': analytics.summary.net_cash_flow < 0}">
+            ₹{{ analytics.summary.net_cash_flow | number:2 }}
+          </h4>
+          <small class="text-muted">Inflow vs Outflow</small>
+        </div>
+      </div>
+
+      <div class="col-6 col-md-4 col-xl-2">
+        <div class="card-custom p-3 border-start border-warning border-4 h-100">
+          <span class="text-muted small fw-semibold text-uppercase">Outstanding Credit</span>
+          <h4 class="fw-bold text-warning mb-0 mt-1">₹{{ analytics.summary.outstanding_credit | number:2 }}</h4>
+          <small class="text-muted">Pending balance</small>
+        </div>
+      </div>
+
+      <div class="col-6 col-md-4 col-xl-2">
+        <div class="card-custom p-3 border-start border-primary border-4 h-100">
+          <span class="text-muted small fw-semibold text-uppercase">Payments Received</span>
+          <h4 class="fw-bold text-primary mb-0 mt-1">₹{{ analytics.summary.total_payments | number:2 }}</h4>
+          <small class="text-muted">Recovered cash</small>
+        </div>
+      </div>
+
+      <div class="col-6 col-md-4 col-xl-2">
+        <div class="card-custom p-3 border-start border-purple border-4 h-100">
+          <span class="text-muted small fw-semibold text-uppercase">Active Customers</span>
+          <h4 class="fw-bold text-purple mb-0 mt-1">{{ analytics.summary.active_customers }}</h4>
+          <small class="text-muted">Ledger profiles</small>
+        </div>
+      </div>
+    </div>
+
+    <!-- Data-Driven Business Insights Banner -->
+    <div class="card-custom p-3 mb-4 bg-gradient-blue text-white" style="background: linear-gradient(135deg, #1e293b, #0f172a);">
+      <div class="d-flex align-items-center gap-2 mb-2">
+        <i class="fa-solid fa-lightbulb text-warning fs-5"></i>
+        <h6 class="fw-bold mb-0 text-white">Automated Key Business Insights</h6>
+      </div>
+      <ul class="mb-0 small ps-3">
+        <li ng-repeat="bullet in analytics.key_insights" class="mb-1">{{ bullet }}</li>
+      </ul>
+    </div>
+
+    <!-- Sales Analytics & Comparison Grid -->
+    <div class="row g-4 mb-4">
+      <!-- Sales Revenue Trend (Line Chart) -->
+      <div class="col-lg-7">
+        <div class="card-custom p-4 h-100">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="fw-bold mb-0"><i class="fa-solid fa-chart-line text-emerald me-2"></i> Sales Revenue Trend</h5>
+            <span class="badge bg-success-subtle text-success">Avg Sale: ₹{{ analytics.summary.avg_sale_value | number:2 }}</span>
+          </div>
+          <div style="height: 280px; position: relative;">
+            <canvas id="salesTrendChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sales vs Expenses Comparison (Grouped Bar Chart) -->
+      <div class="col-lg-5">
+        <div class="card-custom p-4 h-100">
+          <h5 class="fw-bold mb-3"><i class="fa-solid fa-scale-balanced text-primary me-2"></i> Sales vs Expenses</h5>
+          <div style="height: 280px; position: relative;">
+            <canvas id="salesVsExpenseChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cash Flow Analysis & Weekly Activity Grid -->
+    <div class="row g-4 mb-4">
+      <!-- Cash Flow Trend -->
+      <div class="col-lg-7">
+        <div class="card-custom p-4 h-100">
+          <h5 class="fw-bold mb-3"><i class="fa-solid fa-money-bill-transfer text-indigo me-2"></i> Cash Flow Progression (Money In vs Out)</h5>
+          <div style="height: 280px; position: relative;">
+            <canvas id="cashFlowChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Weekly Activity Breakdown -->
+      <div class="col-lg-5">
+        <div class="card-custom p-4 h-100">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="fw-bold mb-0"><i class="fa-solid fa-calendar-week text-warning me-2"></i> Weekly Activity</h5>
+            <span class="badge bg-warning-subtle text-dark">Busiest: {{ analytics.weekly_activity.best_sales_day }}</span>
+          </div>
+          <div style="height: 280px; position: relative;">
+            <canvas id="weeklyActivityChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Credit Recovery & Outstanding Ledger Grid -->
+    <div class="row g-4 mb-4">
+      <!-- Credit Recovery Ring / KPI -->
+      <div class="col-lg-4">
+        <div class="card-custom p-4 h-100 text-center">
+          <h5 class="fw-bold text-start mb-3"><i class="fa-solid fa-rotate-left text-success me-2"></i> Credit Recovery Rate</h5>
+          <div style="height: 200px; position: relative;" class="my-3">
+            <canvas id="creditRecoveryChart"></canvas>
+          </div>
+          <div class="mt-2">
+            <div class="display-6 fw-bold text-success">{{ analytics.summary.recovery_rate }}%</div>
+            <span class="text-muted small">Recovered (₹{{ analytics.summary.recovered_credit | number:2 }}) of Credit (₹{{ analytics.summary.total_credit | number:2 }})</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Outstanding Customers List -->
+      <div class="col-lg-8">
+        <div class="card-custom p-4 h-100">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="fw-bold mb-0"><i class="fa-solid fa-user-clock text-amber me-2"></i> Outstanding Customers</h5>
+            <span class="badge bg-warning-subtle text-dark">{{ analytics.outstanding_customers.length }} Customer(s)</span>
+          </div>
+
+          <div class="table-responsive" style="max-height: 260px;">
+            <table class="table table-hover align-middle mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th>Customer Name</th>
+                  <th>Phone Number</th>
+                  <th>Outstanding Balance</th>
+                  <th class="text-end">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr ng-repeat="cust in analytics.outstanding_customers">
+                  <td class="fw-bold">{{ cust.name }}</td>
+                  <td class="small text-muted">{{ cust.phone || 'No phone' }}</td>
+                  <td class="fw-bold text-danger">₹{{ cust.outstanding | number:2 }}</td>
+                  <td class="text-end">
+                    <a ng-if="cust.phone" href="https://wa.me/{{ cleanPhone(cust.phone) }}?text=Hi%20{{ cust.name }},%20friendly%20reminder%20regarding%20your%20outstanding%20balance%20of%20Rs.%20{{ cust.outstanding }}." target="_blank" class="btn btn-sm btn-outline-success p-1 px-2" title="Send WhatsApp Reminder">
+                      <i class="fa-brands fa-whatsapp me-1"></i>Remind
+                    </a>
+                  </td>
+                </tr>
+                <tr ng-if="!analytics.outstanding_customers || analytics.outstanding_customers.length === 0">
+                  <td colspan="4" class="text-center text-muted py-4">No outstanding balances! All credit accounts are fully settled.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Product Analytics Section (If items exist) -->
+    <div class="row g-4 mb-4" ng-if="analytics.top_products_revenue && analytics.top_products_revenue.length > 0">
+      <div class="col-lg-6">
+        <div class="card-custom p-4 h-100">
+          <h5 class="fw-bold mb-3"><i class="fa-solid fa-boxes-stacked text-purple me-2"></i> Top Products by Revenue</h5>
+          <div style="height: 260px; position: relative;">
+            <canvas id="topProductsChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-6">
+        <div class="card-custom p-4 h-100">
+          <h5 class="fw-bold mb-3"><i class="fa-solid fa-list-ol text-primary me-2"></i> Product Performance Ranking</h5>
+          <div class="table-responsive" style="max-height: 260px;">
+            <table class="table table-hover align-middle mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th>Product</th>
+                  <th>Quantity Sold</th>
+                  <th>Unit</th>
+                  <th>Total Revenue</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr ng-repeat="prod in analytics.top_products_revenue">
+                  <td class="fw-bold text-dark">{{ prod.name }}</td>
+                  <td class="fw-semibold">{{ prod.qty | number:2 }}</td>
+                  <td class="small text-muted">{{ prod.unit }}</td>
+                  <td class="fw-bold text-success">₹{{ prod.revenue | number:2 }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Expense Breakdown & Transaction Mix Grid -->
+    <div class="row g-4 mb-4">
+      <div class="col-lg-6">
+        <div class="card-custom p-4 h-100">
+          <h5 class="fw-bold mb-3"><i class="fa-solid fa-tags text-rose me-2"></i> Expenses by Category</h5>
+          <div style="height: 240px; position: relative;" ng-if="analytics.expense_categories && analytics.expense_categories.length > 0">
+            <canvas id="expenseCategoriesChart"></canvas>
+          </div>
+          <div ng-if="!analytics.expense_categories || analytics.expense_categories.length === 0" class="text-center text-muted py-5">
+            No logged expenses for this period.
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-6">
+        <div class="card-custom p-4 h-100">
+          <h5 class="fw-bold mb-3"><i class="fa-solid fa-pie-chart text-info me-2"></i> Transaction Type Mix</h5>
+          <div style="height: 240px; position: relative;">
+            <canvas id="transactionMixChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

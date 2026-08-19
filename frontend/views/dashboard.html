@@ -1,0 +1,181 @@
+<div>
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="fw-bold mb-1">Dashboard</h2>
+      <p class="text-muted small mb-0">Overview of your customers, credit balances, and recent ledger entries</p>
+    </div>
+    <div>
+      <a href="#!/voice" class="btn btn-gradient-blue shadow-sm">
+        <i class="fa-solid fa-microphone me-2"></i> Voice Record
+      </a>
+    </div>
+  </div>
+
+  <!-- Summary Metric Cards -->
+  <div class="row g-4 mb-4">
+    <div class="col-6 col-xl">
+      <div class="metric-card">
+        <div class="metric-icon metric-icon-blue">
+          <i class="fa-solid fa-users"></i>
+        </div>
+        <div>
+          <h3 class="metric-val">{{ summary.total_customers || 0 }}</h3>
+          <span class="metric-lbl">Total Customers</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-6 col-xl">
+      <div class="metric-card">
+        <div class="metric-icon metric-icon-amber">
+          <i class="fa-solid fa-hand-holding-dollar"></i>
+        </div>
+        <div>
+          <h3 class="metric-val">₹{{ (summary.total_credit || 0) | number:2 }}</h3>
+          <span class="metric-lbl">Total Credit (Gave)</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-6 col-xl">
+      <div class="metric-card">
+        <div class="metric-icon metric-icon-green">
+          <i class="fa-solid fa-money-bill-trend-up"></i>
+        </div>
+        <div>
+          <h3 class="metric-val">₹{{ (summary.total_payments || 0) | number:2 }}</h3>
+          <span class="metric-lbl">Total Payments (Got)</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-6 col-xl">
+      <div class="metric-card">
+        <div class="metric-icon" style="background: linear-gradient(135deg, #0ea5e9, #06b6d4); color: #fff;">
+          <i class="fa-solid fa-cart-shopping"></i>
+        </div>
+        <div>
+          <h3 class="metric-val" style="color: #0ea5e9;">₹{{ (summary.total_sales || 0) | number:2 }}</h3>
+          <span class="metric-lbl">Total Sales</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-6 col-xl">
+      <div class="metric-card">
+        <div class="metric-icon metric-icon-purple">
+          <i class="fa-solid fa-clock-rotate-left"></i>
+        </div>
+        <div>
+          <h3 class="metric-val text-primary">₹{{ (summary.pending_amount || 0) | number:2 }}</h3>
+          <span class="metric-lbl">Pending Balance</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Action & Recent Activity Grid -->
+  <div class="row g-4 mb-4">
+    <!-- Quick Actions -->
+    <div class="col-lg-4">
+      <div class="card-custom p-4 h-100">
+        <h5 class="fw-bold mb-3"><i class="fa-solid fa-bolt text-warning me-2"></i> Quick Actions</h5>
+        <div class="d-grid gap-3">
+          <a href="#!/voice" class="btn btn-outline-blue p-3 text-start d-flex align-items-center gap-3">
+            <div class="metric-icon metric-icon-blue border-0 m-0" style="width:40px; height:40px; font-size:1.2rem;">
+              <i class="fa-solid fa-microphone"></i>
+            </div>
+            <div>
+              <div class="fw-bold text-dark">Speak & Record</div>
+              <small class="text-muted">Record credit/payment in English</small>
+            </div>
+          </a>
+
+          <a href="#!/customers" class="btn btn-light border p-3 text-start d-flex align-items-center gap-3">
+            <div class="metric-icon metric-icon-green border-0 m-0" style="width:40px; height:40px; font-size:1.2rem;">
+              <i class="fa-solid fa-user-plus"></i>
+            </div>
+            <div>
+              <div class="fw-bold text-dark">Manage Customers</div>
+              <small class="text-muted">Add customer ledger profiles</small>
+            </div>
+          </a>
+
+          <a href="#!/inventory" class="btn btn-light border p-3 text-start d-flex align-items-center gap-3">
+            <div class="metric-icon metric-icon-amber border-0 m-0" style="width:40px; height:40px; font-size:1.2rem;">
+              <i class="fa-solid fa-boxes-stacked"></i>
+            </div>
+            <div>
+              <div class="fw-bold text-dark">Manage Inventory</div>
+              <small class="text-muted">Default prices for your products</small>
+            </div>
+          </a>
+
+          <a href="#!/insights" class="btn btn-light border p-3 text-start d-flex align-items-center gap-3">
+            <div class="metric-icon metric-icon-purple border-0 m-0" style="width:40px; height:40px; font-size:1.2rem;">
+              <i class="fa-solid fa-chart-pie"></i>
+            </div>
+            <div>
+              <div class="fw-bold text-dark">View Analytics</div>
+              <small class="text-muted">Monthly trends & payment recovery</small>
+            </div>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Transactions Table -->
+    <div class="col-lg-8">
+      <div class="card-custom p-4 h-100">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="fw-bold mb-0"><i class="fa-solid fa-list-check text-primary me-2"></i> Recent Transactions</h5>
+          <a href="#!/transactions" class="btn btn-sm btn-link text-primary fw-semibold p-0">View All</a>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>Customer</th>
+                <th>Type</th>
+                <th>Amount</th>
+                <th>Date</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr ng-repeat="tx in summary.recent_transactions">
+                <td class="fw-semibold">
+                  <span ng-if="tx.items_data" class="text-success">
+                    <i class="fa-solid fa-cart-shopping me-1"></i>Sales
+                    <span class="badge bg-success-subtle text-success ms-1" ng-if="tx.items_data.length">{{ tx.items_data.length }} item(s)</span>
+                  </span>
+                  <span ng-if="!tx.items_data">{{ tx.customer_detail.name || tx.customer_name_raw || 'General' }}</span>
+                </td>
+                <td>
+                  <span class="badge" ng-class="{
+                    'badge-credit': tx.transaction_type === 'credit',
+                    'badge-payment': tx.transaction_type === 'payment',
+                    'badge-sales': tx.transaction_type === 'sales',
+                    'badge-expense': tx.transaction_type === 'expense'
+                  }">{{ tx.transaction_type | uppercase }}</span>
+                </td>
+                <td class="fw-bold" ng-class="{'text-danger': tx.transaction_type === 'credit', 'text-success': tx.transaction_type === 'payment' || tx.transaction_type === 'sales'}">
+                  ₹{{ tx.amount | number:2 }}
+                </td>
+                <td class="small text-muted">{{ tx.date }}</td>
+                <td>
+                  <span class="badge rounded-pill border" ng-class="{'bg-success-subtle text-success border-success': tx.status === 'settled', 'bg-warning-subtle text-warning border-warning': tx.status === 'pending', 'bg-light text-dark': tx.status !== 'settled' && tx.status !== 'pending'}">{{ tx.status }}</span>
+                </td>
+              </tr>
+              <tr ng-if="!summary.recent_transactions || summary.recent_transactions.length === 0">
+                <td colspan="5" class="text-center text-muted py-4">No recent transactions found. Click "Voice Record" to add your first transaction.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

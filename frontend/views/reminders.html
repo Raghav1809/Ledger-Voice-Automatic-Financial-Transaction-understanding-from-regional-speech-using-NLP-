@@ -1,0 +1,122 @@
+<div>
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+    <div>
+      <h2 class="fw-bold mb-1">Due Reminders</h2>
+      <p class="text-muted small mb-0">Track upcoming customer payment due dates and overdue collection alerts</p>
+    </div>
+    <button class="btn btn-gradient-blue shadow-sm" data-bs-toggle="modal" data-bs-target="#reminderModal" ng-click="openAddModal()">
+      <i class="fa-solid fa-plus me-2"></i> Add Reminder
+    </button>
+  </div>
+
+  <!-- Category Filter Tabs -->
+  <div class="d-flex gap-2 mb-4">
+    <button class="btn" ng-class="currentCategory === 'today' ? 'btn-primary' : 'btn-light border'" ng-click="loadReminders('today')">
+      <i class="fa-solid fa-calendar-day me-1"></i> Today's Due
+    </button>
+    <button class="btn" ng-class="currentCategory === 'upcoming' ? 'btn-primary' : 'btn-light border'" ng-click="loadReminders('upcoming')">
+      <i class="fa-solid fa-calendar-week me-1"></i> Upcoming
+    </button>
+    <button class="btn" ng-class="currentCategory === 'missed' ? 'btn-primary' : 'btn-light border'" ng-click="loadReminders('missed')">
+      <i class="fa-solid fa-triangle-exclamation me-1"></i> Overdue / Missed
+    </button>
+  </div>
+
+  <!-- Reminders List -->
+  <div class="row g-4 mb-4">
+    <div class="col-md-6 col-lg-4" ng-repeat="r in reminders">
+      <div class="card-custom p-4 h-100 border-start border-4" ng-class="{
+        'border-primary': r.computed_status === 'pending',
+        'border-success': r.computed_status === 'completed',
+        'border-danger': r.computed_status === 'missed'
+      }">
+        <div class="d-flex justify-content-between align-items-start mb-2">
+          <h5 class="fw-bold mb-0 text-dark">{{ r.title }}</h5>
+          <span class="badge" ng-class="{
+            'bg-warning text-dark': r.computed_status === 'pending',
+            'bg-success': r.computed_status === 'completed',
+            'bg-danger': r.computed_status === 'missed'
+          }">{{ r.computed_status | uppercase }}</span>
+        </div>
+
+        <p class="text-muted small mb-2"><i class="fa-solid fa-user me-1 text-primary"></i> Customer: <strong>{{ r.customer_detail.name }}</strong></p>
+        <div class="fw-bold fs-5 text-dark mb-2">₹{{ r.amount | number:2 }}</div>
+        <div class="small text-muted mb-1"><i class="fa-regular fa-clock me-1"></i> Due Date: <strong>{{ r.due_date }}</strong></div>
+        <div class="small fw-semibold mb-3" ng-class="{'text-danger': r.computed_status === 'missed', 'text-warning text-dark': r.computed_status === 'pending', 'text-success': r.computed_status === 'completed'}">
+          {{ getDaysLeft(r.due_date) }}
+        </div>
+
+        <div class="d-flex gap-2 mb-2">
+          <button class="btn btn-sm w-100" ng-class="r.status === 'completed' ? 'btn-outline-secondary' : 'btn-success'" ng-click="toggleStatus(r)">
+            <i class="fa-solid" ng-class="r.status === 'completed' ? 'fa-rotate-left me-1' : 'fa-check me-1'"></i>
+            {{ r.status === 'completed' ? 'Mark Pending' : 'Mark Completed' }}
+          </button>
+          <button class="btn btn-sm btn-light border" ng-click="deleteReminder(r.id)" title="Delete">
+            <i class="fa-solid fa-trash text-danger"></i>
+          </button>
+        </div>
+        <button class="btn btn-sm w-100" style="background-color: #25D366; color: white;" ng-click="sendWhatsApp(r)">
+          <i class="fa-brands fa-whatsapp me-1"></i> Send Reminder
+        </button>
+      </div>
+    </div>
+
+    <div class="col-12" ng-if="!isLoading && reminders.length === 0">
+      <div class="card-custom p-5 text-center">
+        <i class="fa-solid fa-bell-slash text-muted fs-1 mb-3"></i>
+        <h5 class="fw-bold">No Reminders Found</h5>
+        <p class="text-muted">You have no active reminders in this category.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Reminder Modal -->
+  <div class="modal fade" id="reminderModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content border-0 shadow">
+        <div class="modal-header border-0 pb-0">
+          <h5 class="fw-bold">Create Payment Reminder</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form ng-submit="saveReminder()">
+            <div class="mb-3">
+              <label class="form-label fw-semibold small">Select Customer *</label>
+              <select class="form-select" ng-model="newReminder.customer" required>
+                <option value="">Choose Customer...</option>
+                <option ng-repeat="c in customers" ng-value="c.id">{{ c.name }}</option>
+              </select>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label fw-semibold small">Reminder Title *</label>
+              <input type="text" class="form-control" ng-model="newReminder.title" required placeholder="e.g. Due payment collection">
+            </div>
+
+            <div class="row g-3 mb-3">
+              <div class="col-md-6">
+                <label class="form-label fw-semibold small">Amount (₹)</label>
+                <input type="number" step="0.01" class="form-control" ng-model="newReminder.amount" placeholder="0.00">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-semibold small">Due Date *</label>
+                <input type="date" class="form-control" ng-model="newReminder.due_date" required>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label fw-semibold small">Notes</label>
+              <textarea class="form-control" rows="2" ng-model="newReminder.notes"></textarea>
+            </div>
+
+            <div class="d-flex justify-content-end gap-2">
+              <button type="button" class="btn btn-light border" data-bs-dismiss="modal">Cancel</button>
+              <button type="submit" class="btn btn-gradient-blue" data-bs-dismiss="modal">Save Reminder</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>

@@ -1,0 +1,1 @@
+# Insights app package init

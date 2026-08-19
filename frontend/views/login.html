@@ -1,0 +1,44 @@
+<div class="row justify-content-center py-4">
+  <div class="col-md-5 col-lg-4">
+    <div class="card-custom p-4 p-md-5">
+      <div class="text-center mb-4">
+        <div class="metric-icon metric-icon-blue mx-auto mb-3">
+          <i class="fa-solid fa-right-to-bracket"></i>
+        </div>
+        <h3 class="fw-bold">Welcome Back</h3>
+        <p class="text-muted small">Sign in to your VoiceKhata account</p>
+      </div>
+
+      <div ng-if="errorMessage" class="alert alert-danger py-2 small" role="alert">
+        {{ errorMessage }}
+      </div>
+
+      <form ng-submit="doLogin()">
+        <div class="mb-3">
+          <label class="form-label fw-semibold small text-muted">Username</label>
+          <div class="input-group">
+            <span class="input-group-text bg-light"><i class="fa-solid fa-user text-muted"></i></span>
+            <input type="text" class="form-control" ng-model="loginData.username" placeholder="Enter username" required>
+          </div>
+        </div>
+
+        <div class="mb-4">
+          <label class="form-label fw-semibold small text-muted">Password</label>
+          <div class="input-group">
+            <span class="input-group-text bg-light"><i class="fa-solid fa-lock text-muted"></i></span>
+            <input type="password" class="form-control" ng-model="loginData.password" placeholder="Enter password" required>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-gradient-blue w-100 py-2 mb-3" ng-disabled="isLoading">
+          <span ng-if="isLoading" class="spinner-border spinner-border-sm me-2"></span>
+          Sign In
+        </button>
+
+        <div class="text-center text-muted small">
+          Don't have an account? <a href="#!/register" class="text-primary fw-semibold">Register here</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
